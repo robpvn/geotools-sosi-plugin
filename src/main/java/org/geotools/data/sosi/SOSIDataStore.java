@@ -16,17 +16,18 @@ import no.jsosi.SosiReader;
 
 /**
  * Reads Norwegian SOSI geodata files.
+ * 
  * @author robnor
  *
  */
 public class SOSIDataStore extends ContentDataStore {
 
 	File file;
-	
+
 	public SOSIDataStore(File file) {
 		this.file = file;
 	}
-	
+
 	@Override
 	protected ContentFeatureSource createFeatureSource(ContentEntry entry) throws IOException {
 		return new SOSIFeatureSource(entry, Query.ALL);
@@ -35,20 +36,21 @@ public class SOSIDataStore extends ContentDataStore {
 	@Override
 	protected List<Name> createTypeNames() throws IOException {
 		String name = file.getName();
-        name = name.substring(0, name.lastIndexOf('.'));
+		name = name.substring(0, name.lastIndexOf('.'));
 
-        Name typeName = new NameImpl( name );
-        return Collections.singletonList(typeName);
+		Name typeName = new NameImpl(name);
+		return Collections.singletonList(typeName);
 	}
-	
+
 	/**
-     * Allow read access to file; for our package visible "friends".
-     * Please close the reader when done.
-     * @return CsvReader for file
-     */
-    SosiReader read() throws IOException {
-    	SosiReader reader = new SosiReader(file);
-        return reader;
-    }
+	 * Allow read access to file; for our package visible "friends". Please
+	 * close the reader when done.
+	 * 
+	 * @return CsvReader for file
+	 */
+	SosiReader read() throws IOException {
+		SosiReader reader = new SosiReader(file);
+		return reader;
+	}
 
 }
