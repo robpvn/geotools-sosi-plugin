@@ -10,6 +10,8 @@ This was hacked together quickly and dirtily at FOSS4G 2015 after attending the 
 DataStore Workshop. Under no circumstances should you use it anywhere near production code!
 For serious work with SOSI and GeoTools, use FME to transform it into something edible.
 
+It needs a fair bit more work before I'd consider submitting it to GeoTools Unsupported Modules.
+
 ##Problems
  - It can't do getBoundsInternal even though that exists in SOSI file headers.
  (It's not supported by JSOSI)
