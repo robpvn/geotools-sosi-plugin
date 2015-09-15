@@ -5,6 +5,11 @@ This plugin allows geoTools to read features from SOSI standard .sos files.
 library to parse the files, and is really just a wrapper around it that complies 
 with the GeoTools API and plugin discovery system.
 
+##Disclaimer
+This was hacked together quickly and dirtily at FOSS4G 2015 after attending the GeoTools
+DataStore Workshop. Under no circumstances should you use it anywhere near production code!
+For serious work with SOSI and GeoTools, use FME to transform it into something edible.
+
 ##Problems
  - It can't do getBoundsInternal even though that exists in SOSI file headers.
  (It's not supported by JSOSI)
