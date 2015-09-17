@@ -24,7 +24,11 @@ It needs a fair bit more work before I'd consider submitting it to GeoTools Unsu
  to define the featuretype. (In one of the files I tested 60K was needed to sample 
  enough of the objects to get all the possible variations...) Needless to say, this means
  setting up the FeatureSource takes as long as running through all the data for most files.
- (We might want to make the number of iterations a user supplied parameter.)
+  - We might want to make the number of iterations a user supplied parameter.
+  - We can implement some kind of cache of discovered schema for future reuse.
+  - SOSI files kan refer to an object catalogue in the header, so if we have those we can supply
+  them, either in some kind of repository (may be license issues there) or as a user parameter.
+ 
  - I don't actually know the SOSI standard and have based this on what I see in JSOSI and
  asking people who know SOSI basic questions.
  
