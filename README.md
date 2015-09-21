@@ -17,6 +17,7 @@ It needs a fair bit more work before I'd consider submitting it to GeoTools Unsu
  (It's not supported by JSOSI)
  - It can't do getCountInternal because SOSI doesn't have any info like that in the head
  (You would have to iterate through the entire file to count it)
+  - Since we might have to do that anyway for the next point, we could cache that data as well
  - The way it does BuildFeatureType is hacky, horrible and wasteful. Since SOSI files
  don't come with any kind of schema in the file (you can use external object catalogues
  for that, but you're not required), the only way I've found to get the feature types
