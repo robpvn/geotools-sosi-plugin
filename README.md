@@ -29,7 +29,7 @@ It needs a fair bit more work before I'd consider submitting it to GeoTools Unsu
   - We can implement some kind of cache of discovered schema for future reuse.
   - SOSI files kan refer to an object catalogue in the header, so if we have those we can supply
   them, either in some kind of repository (may be license issues there) or as a user parameter.
- 
+ - Oh yeah, everything is read as a String.
  - I don't actually know the SOSI standard and have based this on what I see in JSOSI and
  asking people who know SOSI basic questions.
  
