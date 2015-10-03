@@ -30,12 +30,12 @@ import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * Unit test for the SOSI Reader. All of the tests are lifted from JSOSI and
- * adapted to use the GeoTools facade.
+ * adapted to use the GeoTools facade. Probably more integration test than unit test.
  */
 public class SOSITest {
 
-	private List<SimpleFeature> getFeatures(String filename) throws URISyntaxException, IOException {
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader(filename);
+	private List<SimpleFeature> getFeatures(String filename, String extension) throws URISyntaxException, IOException {
+		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader(filename, extension);
 
 		List<SimpleFeature> features = new ArrayList<SimpleFeature>();
 		while (reader.hasNext()) {
@@ -44,9 +44,9 @@ public class SOSITest {
 		return features;
 	}
 
-	private FeatureReader<SimpleFeatureType, SimpleFeature> getReader(String filename)
+	private FeatureReader<SimpleFeatureType, SimpleFeature> getReader(String filename, String extension)
 			throws URISyntaxException, IOException {
-		URL url = SOSITest.class.getResource(filename + ".SOS");
+		URL url = SOSITest.class.getResource(String.format("%s.%s", filename, extension));
 		File file = new File(url.toURI());
 		assertTrue(file.canRead());
 
@@ -68,7 +68,7 @@ public class SOSITest {
 
 	@Test
 	public void testAddress() throws Exception {
-		List<SimpleFeature> features = getFeatures("0219Adresser");
+		List<SimpleFeature> features = getFeatures("0219Adresser","SOS");
 
 		assertEquals(33545, features.size());
 
@@ -89,7 +89,7 @@ public class SOSITest {
 
 	@Test
 	public void testVbase() throws IOException, URISyntaxException {
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("Vbase_02");
+		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("Vbase_02","SOS");
 
 		assertEquals("EPSG:ETRS89 / UTM zone 33N",
 				reader.getFeatureType().getCoordinateReferenceSystem().getName().toString());
@@ -121,7 +121,7 @@ public class SOSITest {
 
 	@Test
 	public void testArealdekke() throws IOException, URISyntaxException {
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("1421_Arealdekke");
+		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("1421_Arealdekke","sos");
 
 		assertEquals("EPSG:ETRS89 / UTM zone 32N",
 				reader.getFeatureType().getCoordinateReferenceSystem().getName().toString());
@@ -168,7 +168,7 @@ public class SOSITest {
 
 	@Test
 	public void testNavnISO() throws IOException, URISyntaxException {
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("1421_Navn_iso");
+		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("1421_Navn_iso","sos");
 
 		assertEquals("EPSG:ETRS89 / UTM zone 32N",
 				reader.getFeatureType().getCoordinateReferenceSystem().getName().toString());
@@ -184,7 +184,7 @@ public class SOSITest {
 
 	@Test
 	public void testMissingGeometry() throws IOException, URISyntaxException {
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("0540_Navn_utf8");
+		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("0540_Navn_utf8","sos");
 
 		assertEquals("EPSG:ETRS89 / UTM zone 33N",
 				reader.getFeatureType().getCoordinateReferenceSystem().getName().toString());
@@ -206,7 +206,7 @@ public class SOSITest {
 
 	@Test
 	public void testEnheterGrunnkrets() throws Exception {
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("STAT_enheter_grunnkretser");
+		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("STAT_enheter_grunnkretser","sos");
 
 		assertEquals("EPSG:ETRS89 / UTM zone 33N",
 				reader.getFeatureType().getCoordinateReferenceSystem().getName().toString());
