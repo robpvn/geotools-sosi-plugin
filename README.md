@@ -13,8 +13,6 @@ For serious work with SOSI and GeoTools, use FME to transform it into something 
 It needs a fair bit more work before I'd consider submitting it to GeoTools Unsupported Modules.
 
 ##Problems
- - It can't do getBoundsInternal even though that is mandatory in SOSI file headers.
- (It wasn't supported by JSOSI but is now, I just haven't fixed this yet.)
  - It can't do getCountInternal because SOSI doesn't have any info like that in the head
  (You would have to iterate through the entire file to count it)
   - Since we might have to do that anyway for the next point, we could cache that data as well
