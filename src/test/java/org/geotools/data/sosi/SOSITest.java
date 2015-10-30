@@ -19,6 +19,9 @@ import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.Query;
 import org.geotools.data.Transaction;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.feature.FeatureIterator;
 import org.junit.Test;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -34,18 +37,7 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 public class SOSITest {
 
-	private List<SimpleFeature> getFeatures(String filename, String extension) throws URISyntaxException, IOException {
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader(filename, extension);
-
-		List<SimpleFeature> features = new ArrayList<SimpleFeature>();
-		while (reader.hasNext()) {
-			features.add(reader.next());
-		}
-		return features;
-	}
-
-	private FeatureReader<SimpleFeatureType, SimpleFeature> getReader(String filename, String extension)
-			throws URISyntaxException, IOException {
+	private SimpleFeatureCollection getFeatureCollection(String filename, String extension) throws URISyntaxException, IOException {
 		URL url = SOSITest.class.getResource(String.format("%s.%s", filename, extension));
 		File file = new File(url.toURI());
 		assertTrue(file.canRead());
@@ -56,23 +48,21 @@ public class SOSITest {
 		DataStore datastore = DataStoreFinder.getDataStore(params);
 
 		assertNotNull("Couldn't get the right datastore", datastore);
-
-		// Make a query for the typename (we only have the one)
-		Query query = new Query(filename);
-
-		// Start reading data
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = datastore.getFeatureReader(query,
-				Transaction.AUTO_COMMIT);
-		return reader;
+		
+		SimpleFeatureSource source = datastore.getFeatureSource(filename);
+		SimpleFeatureCollection featureColl = source.getFeatures();
+		return featureColl;
 	}
 
 	@Test
 	public void testAddress() throws Exception {
-		List<SimpleFeature> features = getFeatures("0219Adresser","SOS");
+		SimpleFeatureCollection featureColl = getFeatureCollection("0219Adresser","SOS");
+		
+		FeatureIterator<SimpleFeature> iterator = featureColl.features();
 
-		assertEquals(33545, features.size());
+		assertEquals(33545, featureColl.size());
 
-		SimpleFeature f = features.get(0);
+		SimpleFeature f = iterator.next();
 		assertEquals("Hans Hanssens vei !nocomment", f.getAttribute("GATENAVN"));
 		assertEquals("SNARØYA", f.getAttribute("POSTNAVN"));
 		assertEquals("0219", f.getAttribute("KOMM"));
@@ -88,20 +78,21 @@ public class SOSITest {
 	}
 
 	@Test
-	public void testVbase() throws IOException, URISyntaxException {
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("Vbase_02","SOS");
+	public void testVbase() throws IOException, URISyntaxException {		
+		SimpleFeatureCollection featureColl = getFeatureCollection("Vbase_02","SOS");
+		FeatureIterator<SimpleFeature> iterator = featureColl.features();
 
 		assertEquals("EPSG:ETRS89 / UTM zone 33N",
-				reader.getFeatureType().getCoordinateReferenceSystem().getName().toString());
+				featureColl.getSchema().getCoordinateReferenceSystem().getName().toString());
 
-		SimpleFeature f1 = reader.next();
+		SimpleFeature f1 = iterator.next();
 		assertEquals("P V 99834", f1.getAttribute("VNR"));
 		assertNull(f1.getAttribute("GATENAVN"));
 		Geometry geometry1 = (Geometry) f1.getDefaultGeometry();
 		assertEquals(12, geometry1.getCoordinates().length);
 		assertTrue(geometry1 instanceof LineString);
 
-		SimpleFeature f2 = reader.next();
+		SimpleFeature f2 = iterator.next();
 		assertEquals("Åsveien", f2.getAttribute("GATENAVN"));
 		Geometry geometry2 = (Geometry) f2.getDefaultGeometry();
 		assertEquals(15, geometry2.getCoordinates().length);
@@ -109,8 +100,8 @@ public class SOSITest {
 
 		int count = 1;
 		SimpleFeature f = null;
-		while (reader.hasNext()) {
-			f = reader.next();
+		while (iterator.hasNext()) {
+			f = iterator.next();
 			count++;
 			assertNotNull(f.getDefaultGeometry());
 		}
@@ -121,12 +112,13 @@ public class SOSITest {
 
 	@Test
 	public void testArealdekke() throws IOException, URISyntaxException {
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("1421_Arealdekke","sos");
+		SimpleFeatureCollection featureColl = getFeatureCollection("1421_Arealdekke","sos");
+		FeatureIterator<SimpleFeature> iterator = featureColl.features();
 
 		assertEquals("EPSG:ETRS89 / UTM zone 32N",
-				reader.getFeatureType().getCoordinateReferenceSystem().getName().toString());
+				featureColl.getSchema().getCoordinateReferenceSystem().getName().toString());
 
-		SimpleFeature f1 = reader.next();
+		SimpleFeature f1 = iterator.next();
 		assertEquals("10000101", f1.getAttribute("OPPDATERINGSDATO"));
 		assertEquals("ÅpentOmråde", f1.getAttribute("OBJTYPE"));
 		assertNull(f1.getAttribute("GATENAVN"));
@@ -138,8 +130,8 @@ public class SOSITest {
 
 		SimpleFeature f = null;
 		//SimpleFeature f5763 = null;
-		while (reader.hasNext()) {
-			f = reader.next();
+		while (iterator.hasNext()) {
+			f = iterator.next();
 			String objtype = (String) f.getAttribute("OBJTYPE");
 			assertNotNull(objtype);
 
@@ -163,19 +155,19 @@ public class SOSITest {
 		assertEquals(21313, count);
 		assertEquals(27, objtypes.size());
 
-		reader.close();
 	}
 
 	@Test
 	public void testNavnISO() throws IOException, URISyntaxException {
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("1421_Navn_iso","sos");
+		SimpleFeatureCollection featureColl = getFeatureCollection("1421_Navn_iso","sos");
+		FeatureIterator<SimpleFeature> iterator = featureColl.features();
 
 		assertEquals("EPSG:ETRS89 / UTM zone 32N",
-				reader.getFeatureType().getCoordinateReferenceSystem().getName().toString());
+				featureColl.getSchema().getCoordinateReferenceSystem().getName().toString());
 
 		SimpleFeature fi = null;
-		while (reader.hasNext()) {
-			fi = reader.next();
+		while (iterator.hasNext()) {
+			fi = iterator.next();
 			assertEquals("Skrivemåte", fi.getAttribute("OBJTYPE"));
 			assertNotNull(fi.getDefaultGeometry());
 			assertTrue(((Geometry) fi.getDefaultGeometry()).isValid());
@@ -184,15 +176,16 @@ public class SOSITest {
 
 	@Test
 	public void testMissingGeometry() throws IOException, URISyntaxException {
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("0540_Navn_utf8","sos");
+		SimpleFeatureCollection featureColl = getFeatureCollection("0540_Navn_utf8","sos");
+		FeatureIterator<SimpleFeature> iterator = featureColl.features();
 
 		assertEquals("EPSG:ETRS89 / UTM zone 33N",
-				reader.getFeatureType().getCoordinateReferenceSystem().getName().toString());
+				featureColl.getSchema().getCoordinateReferenceSystem().getName().toString());
 
 		SimpleFeature fi = null;
 		int count = 0;
-		while (reader.hasNext()) {
-			fi = reader.next();
+		while (iterator.hasNext()) {
+			fi = iterator.next();
 			assertNotNull(fi.getDefaultGeometry());
 			if ("Fønhuskoia".equals(fi.getAttribute("STRENG"))) {
 				assertTrue(((Geometry) fi.getDefaultGeometry()).isEmpty());
@@ -206,16 +199,17 @@ public class SOSITest {
 
 	@Test
 	public void testEnheterGrunnkrets() throws Exception {
-		FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader("STAT_enheter_grunnkretser","sos");
+		SimpleFeatureCollection featureColl = getFeatureCollection("STAT_enheter_grunnkretser","sos");
+		FeatureIterator<SimpleFeature> iterator = featureColl.features();
 
 		assertEquals("EPSG:ETRS89 / UTM zone 33N",
-				reader.getFeatureType().getCoordinateReferenceSystem().getName().toString());
+				featureColl.getSchema().getCoordinateReferenceSystem().getName().toString());
 
 		SimpleFeature fi = null;
 		int count = 0;
 		Set<String> objtypes = new HashSet<String>();
-		while (reader.hasNext()) {
-			fi = reader.next();
+		while (iterator.hasNext()) {
+			fi = iterator.next();
 			assertNotNull(fi);
 			assertNotNull(fi.getDefaultGeometry());
 			count++;
