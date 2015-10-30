@@ -15,7 +15,9 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 import no.jsosi.Feature;
@@ -85,10 +87,19 @@ public class SOSIFeatureSource extends ContentFeatureSource {
 
 	@Override
 	protected ReferencedEnvelope getBoundsInternal(Query arg0) throws IOException {
-		// TODO Auto-generated method stub
-		//SOSI files often have this, but it's not supported in JSOSI. Would need to implement there!
-		// (Or just copy all that code in here and make any other changes we need/Port this to JSOSI?)
-		return null;
+		SosiReader reader = getDataStore().read();
+		Envelope envelope = reader.getBounds();
+		CoordinateReferenceSystem crs;
+		try {
+			crs = CRS.decode(reader.getCrs());
+			return new ReferencedEnvelope(envelope, crs);
+		} catch (NoSuchAuthorityCodeException e) {
+			e.printStackTrace();
+			return null;
+		} catch (FactoryException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override
