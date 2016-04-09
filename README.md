@@ -24,7 +24,8 @@ It needs a fair bit more work before I'd consider submitting it to GeoTools Unsu
  enough of the objects to get all the possible variations...) Needless to say, this means
  setting up the FeatureSource takes as long as running through all the data for most files.
   - We might want to make the number of iterations a user supplied parameter.
-  - We can implement some kind of cache of discovered schema for future reuse.
+  - We can implement some kind of cache of discovered schema for future reuse. (I think the geojson reader in 
+    geotools does this, so that could be a good place to look for inspiration.)
   - SOSI files kan refer to an object catalogue in the header, so if we have those we can supply
   them, either in some kind of repository (may be license issues there) or as a user parameter.
  - Oh yeah, everything is read as a String.
