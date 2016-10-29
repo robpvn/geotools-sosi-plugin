@@ -25,6 +25,9 @@ import no.jsosi.SosiReader;
 
 public class SOSIFeatureSource extends ContentFeatureSource {
 
+	private SimpleFeatureType cachedFeatureType = null;
+	private int cachedFeatureCount = -1;
+	
 	public SOSIFeatureSource(ContentEntry entry, Query query) {
 		super(entry, query);
 	}
@@ -36,52 +39,58 @@ public class SOSIFeatureSource extends ContentFeatureSource {
 
 	@Override
 	protected SimpleFeatureType buildFeatureType() throws IOException {
-		SosiReader reader = getDataStore().read();
-		
-		try {
-			SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-	        builder.setName(entry.getName());
-	        
-	        //TODO: Needs improvement! I don't know how we get this kind of info 
-	        // It isn't in the JSOSI API, and I don't know enough about SOSI to know if it's possible
-	        // We rather hackily spin it off the first 60 000 items(empirically tested!!!) and hope the rest are similar..
-	        // (Which makes the setup waaaaay too slow) (It could be a param, but that would be rather user hostile)
-	        // Sadly, this won't always work because some files can have variable amounts of attributes!
-	        SOSIDataStore store = (SOSIDataStore) getState().getEntry().getDataStore();
-			reader = store.read();
-			
-			Feature firstFeature = reader.nextFeature();
-			int i = 0;
-			Set<String> attributeKeys = new HashSet<String>(firstFeature.getAttributeMap().keySet());
-			
-			Feature feature;
-			while ((feature = reader.nextFeature()) != null && i < 600000) {	
-				attributeKeys.addAll(feature.getAttributeMap().keySet());
-				i++;
-			}
-			
-			for (String key : attributeKeys) {
-	        	builder.add(key, String.class);
-			}	
+		if (cachedFeatureType == null) {
+			SosiReader reader = getDataStore().read();
+			try {
+				SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+				builder.setName(entry.getName());
 
-	        //Seems to work even if we don't set the CRS TODO: investigate if that is the case!
-	        try {
-				builder.setCRS(CRS.decode(reader.getCrs()));
-			} catch (NoSuchAuthorityCodeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (FactoryException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	        builder.add("Geometry", Geometry.class);
-			
-	        
-	        // build the type (it is immutable and cannot be modified)
-            final SimpleFeatureType SCHEMA = builder.buildFeatureType();
-            return SCHEMA;
-		} finally {
-			reader.close();
+				//TODO: Needs improvement! I don't know how we get this kind of info 
+				// It isn't in the JSOSI API, and I don't know enough about SOSI to know if it's possible
+				// We rather hackily spin it off the first 60 000 items(empirically tested!!!) and hope the rest are similar..
+				// (Which makes the setup waaaaay too slow) (It could be a param, but that would be rather user hostile)
+				// Sadly, this won't always work because some files can have variable amounts of attributes!
+				SOSIDataStore store = (SOSIDataStore) getState().getEntry().getDataStore();
+				reader = store.read();
+
+				Feature firstFeature = reader.nextFeature();
+				Set<String> attributeKeys = new HashSet<String>(firstFeature.getAttributeMap().keySet());
+				int featureCount = 1;
+
+				Feature feature;
+				while ((feature = reader.nextFeature()) != null) {
+					attributeKeys.addAll(feature.getAttributeMap().keySet());
+					featureCount++;
+				}
+
+				for (String key : attributeKeys) {
+					builder.add(key, String.class);
+				}
+
+				//Seems to work even if we don't set the CRS TODO: investigate if that is the case!
+				try {
+					builder.setCRS(CRS.decode(reader.getCrs()));
+				} catch (NoSuchAuthorityCodeException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (FactoryException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				builder.add("Geometry", Geometry.class);
+
+				// build the type (it is immutable and cannot be modified)
+				final SimpleFeatureType SCHEMA = builder.buildFeatureType();
+				
+				cachedFeatureType = SCHEMA;
+				cachedFeatureCount = featureCount;
+				
+				return SCHEMA;
+			} finally {
+				reader.close();
+			} 
+		} else {
+			return cachedFeatureType;
 		}
 	}
 
@@ -104,8 +113,10 @@ public class SOSIFeatureSource extends ContentFeatureSource {
 
 	@Override
 	protected int getCountInternal(Query arg0) throws IOException {
-		// TODO Auto-generated method stub
-		return -1;
+		if (cachedFeatureType == null) {
+			buildFeatureType();		
+		}
+		return cachedFeatureCount;
 	}
 
 	@Override

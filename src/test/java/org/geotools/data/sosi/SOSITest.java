@@ -116,6 +116,8 @@ public class SOSITest {
 				featureColl.getSchema().getCoordinateReferenceSystem().getName().toString());
 		assertEquals(new Envelope(6724129, 6774390, 374177, 433608), featureColl.getBounds());
 
+		assertEquals(21314, featureColl.size());
+		
 		SimpleFeature f1 = iterator.next();
 		assertEquals("10000101", f1.getAttribute("OPPDATERINGSDATO"));
 		assertEquals("ÅpentOmråde", f1.getAttribute("OBJTYPE"));
@@ -181,6 +183,7 @@ public class SOSITest {
 		assertEquals("EPSG:ETRS89 / UTM zone 33N",
 				featureColl.getSchema().getCoordinateReferenceSystem().getName().toString());
 		assertEquals(new Envelope(6703549, 6771747, 179199, 236843), featureColl.getBounds());
+		assertEquals(2304, featureColl.size());
 
 		SimpleFeature fi = null;
 		int count = 0;
@@ -205,6 +208,7 @@ public class SOSITest {
 		assertEquals("EPSG:ETRS89 / UTM zone 33N",
 				featureColl.getSchema().getCoordinateReferenceSystem().getName().toString());
 		assertEquals(new Envelope(6426048, 7962744, -99553, 1121942), featureColl.getBounds());
+		assertEquals(79724, featureColl.size());
 
 		SimpleFeature fi = null;
 		int count = 0;
